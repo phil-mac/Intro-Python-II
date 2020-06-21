@@ -1,5 +1,6 @@
 from room import Room
 from player import Player
+from item import Item
 
 # Declare all the rooms
 
@@ -22,6 +23,15 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
+#Declare all the items
+item = {
+    'sword': Item("sword", "Long steel sword"),
+    'wand': Item("wand", "Casts magic spells"),
+    'rock': Item("rock", "A fist-sized rock"),
+    'gold': Item("gold", "Pile of gold coins"),
+    'crown': Item("crown", "Golden grown with gem stones"),
+}
+
 
 # Link rooms together
 
@@ -34,6 +44,10 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+# Add items to rooms
+room['outside'].items = [item['sword'], item['rock']]
+room['treasure'].items = [item['gold'], item['crown']]
+room['overlook'].items = [item['wand']]
 #
 # Main
 #
@@ -55,19 +69,44 @@ player = Player("Prince", room['outside'])
 
 def show_current_room():
     print(player.room.name + " - " + player.room.description)
+    print("Items:")
+    for i in range(len(player.room.items)):
+        print(player.room.items[i].name)
+
 
 def get_user_input():
-    return input('Choose a direction to move (n, s, e, w), or q to quit:')
+    return input('Choose a direction to move (n, s, e, w), or q to quit \n >> ')
 
-# def move_player(command):
-#     if (command == 'n' & player.room.n_to)
-#         player.room = player.room.n_to
+def print_no_room_error():
+    print("No room that way.")
+
+def move_player(command):
+    if command == 'n':
+        if player.room.n_to:
+            player.room = player.room.n_to
+        else:
+            print_no_room_error()
+    if command == 's':
+        if player.room.s_to:
+            player.room = player.room.s_to
+        else:
+            print_no_room_error()
+    if command == 'e':
+        if player.room.e_to:
+            player.room = player.room.e_to
+        else:
+            print_no_room_error()
+    if command == 'w':
+        if player.room.w_to:
+            player.room = player.room.w_to
+        else:
+            print_no_room_error()
     
-
 show_current_room()
 command = get_user_input()
-# move_player(command)
 
 while command != 'q':
+    move_player(command)
     show_current_room()
     command = get_user_input()
+
