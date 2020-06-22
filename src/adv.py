@@ -69,10 +69,10 @@ player = Player("Prince", room['outside'])
 
 def show_current_room():
     print(player.room.name + " - " + player.room.description)
-    print("Items:")
+    print("Room items:")
     for i in range(len(player.room.items)):
         print(player.room.items[i].name)
-
+    
 
 def get_user_input():
     return input('Choose a direction to move (n, s, e, w), or q to quit \n >> ')
@@ -101,12 +101,40 @@ def move_player(command):
             player.room = player.room.w_to
         else:
             print_no_room_error()
-    
+
+def interact_item(verb, noun):
+    if verb == "get" or verb == "take":
+        if (noun in item) and (item[noun] in player.room.items):
+            player.pickup_item(item[noun])
+            player.room.items.remove(item[noun])
+        else:
+            print("item not found in room")
+    if verb == "drop":
+        if (noun in item) and (item[noun] in player.inventory):
+            player.drop_item(item[noun])
+            player.room.items.append(item[noun])
+        else:
+            print("item not found in inventory")
+
+def show_inventory():
+    print("Inventory items:")
+    for i in range(len(player.inventory)):
+        print(player.inventory[i].name)
+
+def parse_command(command):
+    command_array = command.split(' ')
+    if (command == 'i' or command == 'inventory'):
+        show_inventory()
+    elif len(command_array) == 1:
+        move_player(command)
+    elif len(command_array) == 2:
+        interact_item(command_array[0],command_array[1])
+
 show_current_room()
 command = get_user_input()
 
 while command != 'q':
-    move_player(command)
+    parse_command(command)
     show_current_room()
     command = get_user_input()
 
