@@ -1,26 +1,27 @@
 from room import Room
 from player import Player
 from item import Item
+from lightSource import LightSource
 
 # Declare all the rooms
 
 room = {
     'outside':  Room("Outside Cave Entrance",
-                     "North of you, the cave mouth beckons"),
+                     "North of you, the cave mouth beckons", True),
 
     'foyer':    Room("Foyer", """Dim light filters in from the south. Dusty
-passages run north and east."""),
+passages run north and east.""", True),
 
     'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling
 into the darkness. Ahead to the north, a light flickers in
-the distance, but there is no way across the chasm."""),
+the distance, but there is no way across the chasm.""", True),
 
     'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
-to north. The smell of gold permeates the air."""),
+to north. The smell of gold permeates the air.""", False),
 
     'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
 chamber! Sadly, it has already been completely emptied by
-earlier adventurers. The only exit is to the south."""),
+earlier adventurers. The only exit is to the south.""", False),
 }
 
 #Declare all the items
@@ -30,6 +31,7 @@ item = {
     'rock': Item("rock", "A fist-sized rock"),
     'gold': Item("gold", "Pile of gold coins"),
     'crown': Item("crown", "Golden grown with gem stones"),
+    'lamp': LightSource("lamp", "provides light")
 }
 
 
@@ -48,6 +50,7 @@ room['treasure'].s_to = room['narrow']
 room['outside'].items = [item['sword'], item['rock']]
 room['treasure'].items = [item['gold'], item['crown']]
 room['overlook'].items = [item['wand']]
+room['narrow'].items = [item['lamp']]
 #
 # Main
 #
@@ -67,12 +70,23 @@ player = Player("Prince", room['outside'])
 #
 # If the user enters "q", quit the game.
 
+def room_is_lit():
+    if player.room.is_light:
+        return True
+    elif any(isinstance(x, LightSource) for x in player.room.items):
+        return True
+    elif any(isinstance(x, LightSource) for x in player.inventory):
+        return True
+
+
 def show_current_room():
-    print(player.room.name + " - " + player.room.description)
-    print("Room items:")
-    for i in range(len(player.room.items)):
-        print(player.room.items[i].name)
-    
+    if room_is_lit():
+        print(player.room.name + " - " + player.room.description)
+        print("Room items:")
+        for i in range(len(player.room.items)):
+            print(player.room.items[i].name)
+    else:
+        print("It's pitch black!")
 
 def get_user_input():
     return input('Choose a direction to move (n, s, e, w), or q to quit \n >> ')
@@ -104,7 +118,9 @@ def move_player(command):
 
 def interact_item(verb, noun):
     if verb == "get" or verb == "take":
-        if (noun in item) and (item[noun] in player.room.items):
+        if not room_is_lit:
+            print("Good luck finding that in the dark!")
+        elif (noun in item) and (item[noun] in player.room.items):
             player.pickup_item(item[noun])
             player.room.items.remove(item[noun])
         else:
